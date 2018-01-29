@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="tw.c3p0cy.practice.spring.springbootmybatisredis.repo.UserRepo">
+  <resultMap id="BaseResultMap" type="tw.c3p0cy.practice.spring.springbootmybatisredis.domain.User">
+    <result column="sid" property="sid"/>
+    <result column="enabled" property="enabled"/>
+    <result column="created" jdbcType="TIMESTAMP" property="created" javaType="java.sql.Timestamp"/>
+    <result column="createdBy" property="created_by"/>
+    <result column="lastModified" jdbcType="TIMESTAMP" property="last_modified"
+      javaType="java.sql.Timestamp"/>
+    <result column="lastModifiedBy" property="last_modified_by"/>
+    <result column="id" property="id"/>
+    <result column="name" property="name"/>
+    <result column="primaryOrg" property="primary_org"/>
+    <result column="customSettings" property="custom_settings"/>
+    <result column="email" property="email"/>
+  </resultMap>
+
+  <parameterMap id="User" type="tw.c3p0cy.practice.spring.springbootmybatisredis.domain.User"/>
+
+  <sql id="Base_Column_List">
+    sid,enabled,created,created_by,created_by,last_modified,last_modified_by,primary_org,id,name,custom_settings,email
+  </sql>
+
+  <select id="findBySid" resultMap="BaseResultMap" parameterType="java.lang.Integer">
+    select
+    <include refid="Base_Column_List"/>
+    from user
+    where sid = #{sid}
+  </select>
+
+  <select id="findById" resultMap="BaseResultMap" parameterType="java.lang.String">
+    select
+    <include refid="Base_Column_List"/>
+    from user
+    where id = #{id}
+  </select>
+
+  <select id="findAll" resultMap="BaseResultMap">
+    select
+    <include refid="Base_Column_List"/>
+    from user
+  </select>
+
+  <insert id="create" parameterMap="User" useGeneratedKeys="true" keyProperty="sid">
+    insert into
+    user(
+    enabled,
+    created,
+    created_by,
+    last_modified,
+    last_modified_by,
+    primary_org,
+    id,
+    name,
+    custom_settings,
+    email
+    ) values (
+    #{enabled},
+    #{created,jdbcType=TIMESTAMP},
+    #{createdBy},
+    #{lastModified,jdbcType=TIMESTAMP},
+    #{lastModifiedBy},
+    #{primaryOrg},
+    #{id},
+    #{name},
+    #{customSettings},
+    #{email}
+    )
+  </insert>
+
+  <update id="update" parameterMap="User">
+    update
+    user
+    set
+    enabled=#{enabled},
+    created=#{created,jdbcType=TIMESTAMP},
+    created_by=#{createdBy},
+    last_modified=#{lastModified,jdbcType=TIMESTAMP},
+    last_modified_by=#{lastModifiedBy},
+    primary_org=#{primaryOrg},
+    id=#{id},
+    name=#{name},
+    custom_settings=#{customSettings},
+    email=#{email}
+    where
+    sid = #{sid}
+  </update>
+
+  <delete id="disable" parameterType="java.lang.Integer">
+    update
+    user
+    set enabled=0
+    where
+    sid = #{sid}
+  </delete>
+
+</mapper>
