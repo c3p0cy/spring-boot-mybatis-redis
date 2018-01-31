@@ -25,12 +25,12 @@ public class Controller {
 
   @RequestMapping(value = "/findBySid/{sid}", method = RequestMethod.GET)
   public User findBySid(@PathVariable("sid") Integer sid) {
-    return service.findBySid(sid);
+    return service.findBySid(sid).orElse(null);
   }
 
   @RequestMapping(value = "/findById/{id}", method = RequestMethod.GET)
   public User findById(@PathVariable("id") String id) {
-    return service.findById(id);
+    return service.findById(id).orElse(null);
   }
 
   @RequestMapping(value = "/add", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE)

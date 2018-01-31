@@ -45,24 +45,6 @@ ENGINE=InnoDB
 AUTO_INCREMENT=5
 ;
 
-DROP TABLE IF EXISTS `user`;
-CREATE TABLE IF NOT EXISTS `user` (
-  `sid` int(11) NOT NULL AUTO_INCREMENT,
-  `enabled` tinyint(1) NOT NULL DEFAULT 0,
-  `created` datetime NOT NULL,
-  `created_by` int(11) NOT NULL,
-  `last_modified` datetime DEFAULT NULL,
-  `last_modified_by` int(11) DEFAULT NULL,
-  `primary_org` int(11) DEFAULT NULL,
-  `id` varchar(45) NOT NULL,
-  `name` varchar(45) NOT NULL,
-  `custom_settings` varchar(45) DEFAULT NULL,
-  `email` varchar(40) DEFAULT NULL,
-  PRIMARY KEY (`sid`),
-  UNIQUE KEY `UX_user__id` (`id`),
-  KEY `IDX_user__primary_org` (`primary_org`)
-) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8;
-
 INSERT INTO `user` (`sid`, `enabled`, `created`, `created_by`, `last_modified`, `last_modified_by`, `primary_org`, `id`, `name`, `custom_settings`, `email`) VALUES
 	(1, 1, '2018-01-29 15:56:07', 1, NULL, NULL, NULL, 'admin', 'admin_name', NULL, NULL),
 	(2, 1, '2018-01-29 15:59:15', 1, NULL, NULL, NULL, 'user_01', 'user_01_name', NULL, NULL),
@@ -76,11 +58,73 @@ INSERT INTO `user` (`sid`, `enabled`, `created`, `created_by`, `last_modified`, 
 * (POST)localhost:8080/user/add
 * (PUT)localhost:8080/user/update
 * (DELETE)localhost:8080/user/delete/{sid}
+----
+### Redis:
+* Dependency:
+```xml
+<dependency>
+  <groupId>org.springframework.boot</groupId>
+  <artifactId>spring-boot-starter-data-redis</artifactId>
+  <version>1.5.9.RELEASE</version>
+</dependency>
+```
+* Configure: application.properties
+```shell
+## Redis
+## Database Index(default: 0)
+spring.redis.database=0
+spring.redis.host=vm
+spring.redis.port=52031
+## PW（default: empty）
+spring.redis.password=
+## Max pool connections(negative is unlimited)
+spring.redis.pool.max-active=8
+## Max pool waitting-time(negative is unlimited)
+spring.redis.pool.max-wait=-1
+## Max pool idel connections
+spring.redis.pool.max-idle=8
+## Min pool idel connections
+spring.redis.pool.min-idle=0
+## connection timeout(ms)
+spring.redis.timeout=0
+```
+* Cache Aside Pattern:
+  * Hits the cache: return it.
+  * Not hits the cache: query it from database, if successful, add it to cache.
+  * Update: first update to database, if successful, delete the cache.
+  * Create: No need to add to the cache.
+* Code Snippet:
+```java
+@Autowired
+private RedisTemplate redisTemplate;
+  
+ValueOperations<String, User> operations = redisTemplate.opsForValue();
+// Hits cache
+if (redisTemplate.hasKey(key)) {
+  return operations.get(key);
+}
+
+// Add to cache
+operations.set(key, object, 10, TimeUnit.SECONDS);
+
+// Delete cached
+redisTemplate.delete(key)
+```
 ----------------------------------------------------
-## TODO
+### TODO:
+* Study how to design a cached architecture:
+  * Use a different key for each method: This will cache the same object repeatedly, which results in wasted cache memory / space and potential performance issues, and make it more difficult to delete or update the cache.
+  * Cached for individual objects: This will make the program structure more complex.
+* Transaction effects
+* What situations is applied to:
+  * redisTemplate.opsForValue();
+  * redisTemplate.opsForHash();
+  * redisTemplate.opsForList();
+  * redisTemplate.opsForSet();
+  * redisTemplate.opsForZSet();
 
 ----------------------------------------------------
-## References:
+### References:
 * [Spring Boot 整合 Redis 实现缓存操作](https://www.bysocket.com/?p=1756)
 * [mybatis/spring-boot-starter](https://github.com/mybatis/spring-boot-starter)
 * [JeffLi1993/springboot-learning-example](https://github.com/JeffLi1993/springboot-learning-example/blob/master/springboot-mybatis-redis/pom.xml)
