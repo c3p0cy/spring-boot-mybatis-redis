@@ -44,7 +44,7 @@ public class UserServiceImpl implements UserService {
     if (redisTemplate.hasKey(key)) {
       operations = redisTemplate.opsForValue();
       List<User> found = operations.get(key);
-      log.debug(String.format("%s: Hits cache by key=%s >> %s", RuntimeUtils.getMethodName(), KEY_PREFIX,
+      log.debug(String.format("%s: Hits cache by key=%s >> %s", RuntimeUtils.getMethodName(), key,
           Arrays.toString(found.toArray())));
       return found;
     }
@@ -52,7 +52,8 @@ public class UserServiceImpl implements UserService {
     List<User> found = repo.findAll();
     if (found != null) {
       operations = redisTemplate.opsForValue();
-      operations.set(key, found, 10, TimeUnit.SECONDS);
+      operations.set(key, found, 30, TimeUnit.SECONDS);
+      log.debug(String.format("%s: Query from db >> %s >> add to cache %s", RuntimeUtils.getMethodName(), found, key));
     }
     return found;
   }
@@ -67,7 +68,7 @@ public class UserServiceImpl implements UserService {
     if (redisTemplate.hasKey(key)) {
       operations = redisTemplate.opsForValue();
       User found = operations.get(key);
-      log.debug(String.format("%s: Hits cache by key=%s >> %s", RuntimeUtils.getMethodName(), KEY_PREFIX, found));
+      log.debug(String.format("%s: Hits cache by key=%s >> %s", RuntimeUtils.getMethodName(), key, found));
       return Optional.of(found);
     }
 
@@ -79,7 +80,7 @@ public class UserServiceImpl implements UserService {
 
     // Add to cache
     operations = redisTemplate.opsForValue();
-    operations.set(key, found, 10, TimeUnit.SECONDS);
+    operations.set(key, found, 30, TimeUnit.SECONDS);
     log.debug(String.format("%s: Query from db by sid=%s >> %s >> add to cache %s", RuntimeUtils.getMethodName(), sid, found, key));
     return Optional.of(found);
   }
@@ -94,7 +95,7 @@ public class UserServiceImpl implements UserService {
     if (redisTemplate.hasKey(key)) {
       operations = redisTemplate.opsForValue();
       User found = operations.get(key);
-      log.debug(String.format("%s: Hits cache by key=%s >> %s", RuntimeUtils.getMethodName(), KEY_PREFIX, found));
+      log.debug(String.format("%s: Hits cache by key=%s >> %s", RuntimeUtils.getMethodName(), key, found));
       return Optional.of(found);
     }
 
@@ -106,7 +107,7 @@ public class UserServiceImpl implements UserService {
 
     // Add to cache
     operations = redisTemplate.opsForValue();
-    operations.set(key, found, 10, TimeUnit.SECONDS);
+    operations.set(key, found, 30, TimeUnit.SECONDS);
     log.debug(String.format("%s: Query from db by id=%s >> %s >> add to cache %s", RuntimeUtils.getMethodName(), id, found, key));
     return Optional.of(found);
   }
