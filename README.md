@@ -107,7 +107,7 @@ if (redisTemplate.hasKey(key)) {
 // Add to cache
 operations.set(key, object, 10, TimeUnit.SECONDS);
 
-// Delete cached
+// Delete cache
 redisTemplate.delete(key)
 ```
 ----------------------------------------------------

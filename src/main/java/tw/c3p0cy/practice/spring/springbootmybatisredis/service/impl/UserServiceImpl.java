@@ -8,7 +8,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -42,11 +41,12 @@ public class UserServiceImpl implements UserService {
     ValueOperations<String, List<User>> operations;
 
     if (redisTemplate.hasKey(key)) {
-      operations = redisTemplate.opsForValue();
-      List<User> found = operations.get(key);
-      log.debug(String.format("%s: Hits cache by key=%s >> %s", RuntimeUtils.getMethodName(), key,
-          Arrays.toString(found.toArray())));
-      return found;
+      // operations = redisTemplate.opsForValue();
+      // List<User> found = operations.get(key);
+      // log.debug(String.format("%s: Hits cache by key=%s >> %s", RuntimeUtils.getMethodName(), key,
+      //     Arrays.toString(found.toArray())));
+      // return found;
+      return getCachedList(redisTemplate.opsForValue(),key);
     }
 
     List<User> found = repo.findAll();
@@ -66,10 +66,7 @@ public class UserServiceImpl implements UserService {
 
     // Hits cache
     if (redisTemplate.hasKey(key)) {
-      operations = redisTemplate.opsForValue();
-      User found = operations.get(key);
-      log.debug(String.format("%s: Hits cache by key=%s >> %s", RuntimeUtils.getMethodName(), key, found));
-      return Optional.of(found);
+      return Optional.of(getCached(redisTemplate.opsForValue(), key));
     }
 
     // Query from db
@@ -93,10 +90,7 @@ public class UserServiceImpl implements UserService {
 
     // Hits cache
     if (redisTemplate.hasKey(key)) {
-      operations = redisTemplate.opsForValue();
-      User found = operations.get(key);
-      log.debug(String.format("%s: Hits cache by key=%s >> %s", RuntimeUtils.getMethodName(), key, found));
-      return Optional.of(found);
+      return Optional.of(getCached(redisTemplate.opsForValue(), key));
     }
 
     // Query from db
@@ -133,6 +127,20 @@ public class UserServiceImpl implements UserService {
       deleteCached(repo.findBySid(sid));
     }
     return result;
+  }
+
+  private <T extends User> T getCached(ValueOperations<String, T> ops, String key) {
+    ops = redisTemplate.opsForValue();
+    T found = ops.get(key);
+    log.debug(String.format("%s: Hits cache by key = %s >> result = %s", RuntimeUtils.getMethodName(3), key, found));
+    return found;
+  }
+
+  private <T extends List<?>> T getCachedList(ValueOperations<String, T> ops, String key) {
+    ops = redisTemplate.opsForValue();
+    T found = ops.get(key);
+    log.debug(String.format("%s: Hits cache by key = %s >> result = %s", RuntimeUtils.getMethodName(3), key, Arrays.toString(found.toArray())));
+    return found;
   }
 
   private void deleteCached(User user) {
